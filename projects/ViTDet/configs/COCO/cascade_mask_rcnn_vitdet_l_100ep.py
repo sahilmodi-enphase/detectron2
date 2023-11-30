@@ -10,8 +10,9 @@ from .cascade_mask_rcnn_vitdet_b_100ep import (
 )
 
 train.init_checkpoint = (
-    "detectron2://ImageNetPretrained/MAE/mae_pretrain_vit_large.pth?matching_heuristics=True"
+    "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/ViTDet/models/vitdet_l_coco_cascade.pkl"
 )
+train.device = "cpu"
 
 model.backbone.net.embed_dim = 1024
 model.backbone.net.depth = 24
