@@ -51,8 +51,10 @@ if __name__ == "__main__":
     image_dir = "/Users/sahilmodi/Projects/Image_SuperResolution/building-outline-detection/services/roof_line_detection/cache/test_717_baseline/images"
     output_dir = "results/test_717_baseline_" + time.strftime("%Y%m%d_%H%M%S")
     os.makedirs(output_dir)
-    config_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/ViTDet/configs/COCO/cascade_mask_rcnn_vitdet_l_100ep.py"
-    train_init_checkpoint = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/ViTDet/models/vitdet_l_coco_cascade.pkl"
+    # config_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/ViTDet/configs/COCO/cascade_mask_rcnn_vitdet_l_100ep.py"
+    config_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/ViTDet/configs/roofai_18k_dataset.py"
+    # train_init_checkpoint = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/ViTDet/models/vitdet_l_coco_cascade.pkl"
+    train_init_checkpoint = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/ViTDet/models/model_0004999.pth"
 
     cfg = LazyConfig.load(config_file)
     dataloader = instantiate(get_dataloader(image_dir))

@@ -64,6 +64,12 @@ def do_train(args, cfg):
     logger = logging.getLogger("detectron2")
     logger.info("Model:\n{}".format(model))
     model.to(cfg.train.device)
+    for params in model.parameters():
+        params.requires_grad = False
+    for params in model.roi_heads.box_predictor.parameters():
+        params.requires_grad = True
+    for params in model.roi_heads.mask_head.parameters():
+        params.requires_grad = True
 
     cfg.optimizer.params.model = model
     optim = instantiate(cfg.optimizer)
