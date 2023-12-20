@@ -1,10 +1,14 @@
+import cv2
 import json
+import numpy as np
 import os
 import re
 
 from detectron2.data import MetadataCatalog
 from detectron2.data.catalog import DatasetCatalog
 from detectron2.structures.boxes import BoxMode
+
+from panopticapi.utils import rgb2id
 
 def create_roofai_dataset():
     dataset_folder = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k"
@@ -51,15 +55,10 @@ def create_roofai_train_panoptic_dataset():
     dataset_folder = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k/train"
     image_folder = os.path.join(dataset_folder, "images")
     pan_seg_gt_folder = os.path.join(dataset_folder, "gt_masks")
-    contour_json_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k/vgg_till_oct31_outer_contour.json"
-
-    with open(contour_json_file, "r") as f:
-        contour_data = json.load(f)
 
     dataset_list = []
 
     for filename in os.listdir(image_folder):
-        outer_contour = contour_data[filename]
         dataset_list.append({
             "file_name": os.path.join(image_folder, filename),
             "height": 800,
@@ -83,15 +82,10 @@ def create_roofai_val_panoptic_dataset():
     dataset_folder = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k/val"
     image_folder = os.path.join(dataset_folder, "images")
     pan_seg_gt_folder = os.path.join(dataset_folder, "gt_masks")
-    contour_json_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k/vgg_till_oct31_outer_contour.json"
-
-    with open(contour_json_file, "r") as f:
-        contour_data = json.load(f)
 
     dataset_list = []
 
     for filename in os.listdir(image_folder):
-        outer_contour = contour_data[filename]
         dataset_list.append({
             "file_name": os.path.join(image_folder, filename),
             "height": 800,
@@ -128,6 +122,100 @@ def register_roofai_panoptic_dataset():
     MetadataCatalog.get("roofai_18k_panoptic_val").thing_dataset_id_to_contiguous_id = {0: 0}
 
 
-if __name__ == "__main__":
+def create_roofai_facets_train_panoptic_dataset():
+    dataset_folder = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k/train"
+    image_folder = os.path.join(dataset_folder, "images")
+    pan_seg_gt_folder = os.path.join(dataset_folder, "gtmasks_facets")
+
+    dataset_list = []
+
+    for filename in os.listdir(image_folder):
+        pan_seg_file_name = os.path.join(pan_seg_gt_folder, filename)
+        pan_seg_img = cv2.imread(pan_seg_file_name)
+        facet_pixels = np.unique(pan_seg_img)
+        segments_info = []
+        for fp in facet_pixels:
+            if fp == 0:
+                segments_info.append({
+                    "category_id": 1,
+                    "id": 0,
+                    "iscrowd": 0,
+                })
+            else:
+                segments_info.append({
+                    "category_id": 0,
+                    "id": rgb2id([fp, fp, fp]),
+                    "iscrowd": 0,
+                })
+        dataset_list.append({
+            "file_name": os.path.join(image_folder, filename),
+            "height": 800,
+            "width": 800,
+            "image_id": int(re.findall("\d+", filename)[0]),
+            "pan_seg_file_name": pan_seg_file_name,
+            "segments_info": segments_info
+        })
+
+    return dataset_list
+
+
+def create_roofai_facets_val_panoptic_dataset():
+    dataset_folder = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k/val"
+    image_folder = os.path.join(dataset_folder, "images")
+    pan_seg_gt_folder = os.path.join(dataset_folder, "gtmasks_facets")
+
+    dataset_list = []
+
+    for filename in os.listdir(image_folder):
+        pan_seg_file_name = os.path.join(pan_seg_gt_folder, filename)
+        pan_seg_img = cv2.imread(pan_seg_file_name)
+        facet_pixels = np.unique(pan_seg_img)
+        segments_info = []
+        for fp in facet_pixels:
+            if fp == 0:
+                segments_info.append({
+                    "category_id": 1,
+                    "id": 0,
+                    "iscrowd": 0,
+                })
+            else:
+                segments_info.append({
+                    "category_id": 0,
+                    "id": rgb2id([fp, fp, fp]),
+                    "iscrowd": 0,
+                })
+        dataset_list.append({
+            "file_name": os.path.join(image_folder, filename),
+            "height": 800,
+            "width": 800,
+            "image_id": int(re.findall("\d+", filename)[0]),
+            "pan_seg_file_name": pan_seg_file_name,
+            "segments_info": segments_info
+        })
+
+    return dataset_list
+
+
+def register_roofai_facets_panoptic_dataset():
+
+    if "roofai_18k_facets_panoptic_train" in DatasetCatalog.list():
+        DatasetCatalog.remove("roofai_18k_facets_panoptic_train")
+    DatasetCatalog.register("roofai_18k_facets_panoptic_train", create_roofai_facets_train_panoptic_dataset)
+    MetadataCatalog.get("roofai_18k_facets_panoptic_train").thing_classes = ["roof"]
+    MetadataCatalog.get("roofai_18k_facets_panoptic_train").ignore_label = 255
+    MetadataCatalog.get("roofai_18k_facets_panoptic_train").thing_dataset_id_to_contiguous_id = {0: 0}
+
+    if "roofai_18k_facets_panoptic_val" in DatasetCatalog.list():
+        DatasetCatalog.remove("roofai_18k_facets_panoptic_val")
+    DatasetCatalog.register("roofai_18k_facets_panoptic_val", create_roofai_facets_val_panoptic_dataset)
+    MetadataCatalog.get("roofai_18k_facets_panoptic_val").thing_classes = ["roof"]
+    MetadataCatalog.get("roofai_18k_facets_panoptic_val").ignore_label = 255
+    MetadataCatalog.get("roofai_18k_facets_panoptic_val").thing_dataset_id_to_contiguous_id = {0: 0}
+
+def register_roofai_datasets():
     register_roofai_dataset()
     register_roofai_panoptic_dataset()
+    register_roofai_facets_panoptic_dataset()
+
+if __name__ == "__main__":
+    register_roofai_datasets()

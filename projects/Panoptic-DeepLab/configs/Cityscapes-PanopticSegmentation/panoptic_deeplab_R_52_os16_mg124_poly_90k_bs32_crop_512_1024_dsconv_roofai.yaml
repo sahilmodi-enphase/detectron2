@@ -8,7 +8,7 @@ MODEL:
     NAME: "build_resnet_deeplab_backbone"
   RESNETS:
     DEPTH: 50
-    NORM: "SyncBN"
+    NORM: "BN"
     RES5_MULTI_GRID: [1, 2, 4]
     STEM_TYPE: "deeplab"
     STEM_OUT_CHANNELS: 128
@@ -18,11 +18,14 @@ MODEL:
   SEM_SEG_HEAD:
     USE_DEPTHWISE_SEPARABLE_CONV: True
     NUM_CLASSES: 2
-#DATASETS:
-#  TRAIN: ("roofai_18k_panoptic_train",)
-#  TEST: ("roofai_18k_panoptic_val",)
+    NORM: "BN"
+  INS_EMBED_HEAD:
+    NORM: "BN"
+DATASETS:
+  TRAIN: ("roofai_18k_facets_panoptic_train",)
+  TEST: ("roofai_18k_facets_panoptic_val",)
 SOLVER:
-  MAX_ITER: 90000
+  MAX_ITER: 150000
   IMS_PER_BATCH: 2
 INPUT:
   FORMAT: "RGB"

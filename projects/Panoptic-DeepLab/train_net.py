@@ -9,7 +9,7 @@ This script is a simplified version of the training script in detectron2/tools.
 import os
 import torch
 
-from datasets.register_roofai_18k_datasets import register_roofai_panoptic_dataset
+from datasets.register_roofai_18k_datasets import register_roofai_datasets
 import detectron2.data.transforms as T
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
@@ -160,7 +160,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    register_roofai_panoptic_dataset()
+    register_roofai_datasets()
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
     launch(
