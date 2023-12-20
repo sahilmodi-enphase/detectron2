@@ -2,6 +2,7 @@ import time
 
 import cv2
 import json
+import numpy as np
 import os
 import re
 from tqdm import tqdm
@@ -19,36 +20,36 @@ from detectron2.structures.boxes import BoxMode
 from detectron2.utils.visualizer import Visualizer
 
 def create_roofai_panoptic_dataset():
-    dataset_folder = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k"
+    dataset_folder = "/Users/sahilmodi/Projects/Image_SuperResolution/building-outline-detection/services/roof_line_detection/cache/test_717_baseline"
     image_folder = os.path.join(dataset_folder, "images")
-    pan_seg_gt_folder = os.path.join(dataset_folder, "images")
-    contour_json_file = [os.path.join(dataset_folder, c_file) for c_file in os.listdir(dataset_folder) if "outer_contour" in c_file][0]
+    # pan_seg_gt_folder = os.path.join(dataset_folder, "images")
+    # contour_json_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/datasets/roofai_18k/vgg_till_oct31_outer_contour.json"
 
-    with open(contour_json_file, "r") as f:
-        contour_data = json.load(f)
+    # with open(contour_json_file, "r") as f:
+    #     contour_data = json.load(f)
 
     dataset_list = []
 
     for filename in os.listdir(image_folder):
-        outer_contour = contour_data[filename]
+        # outer_contour = contour_data[filename]
         dataset_list.append({
             "file_name": os.path.join(image_folder, filename),
             "height": 800,
             "width":  800,
             "image_id": int(re.findall("\d+", filename)[0]),
             # "pan_seg_file_name": os.path.join(pan_seg_gt_folder, filename),
-            "segments_info": [{
-                "bbox": [
-                    min(outer_contour, key=lambda x: x[0])[0],
-                    min(outer_contour, key=lambda x: x[1])[1],
-                    max(outer_contour, key=lambda x: x[0])[0],
-                    max(outer_contour, key=lambda x: x[1])[1]
-                ],
-                "bbox_mode": BoxMode.XYXY_ABS,
-                "category_id": 0,
-                "id": 16777215,
-                "iscrowd": 0,
-            }]
+            # "segments_info": [{
+            #     "bbox": [
+            #         min(outer_contour, key=lambda x: x[0])[0],
+            #         min(outer_contour, key=lambda x: x[1])[1],
+            #         max(outer_contour, key=lambda x: x[0])[0],
+            #         max(outer_contour, key=lambda x: x[1])[1]
+            #     ],
+            #     "bbox_mode": BoxMode.XYXY_ABS,
+            #     "category_id": 0,
+            #     "id": 16777215,
+            #     "iscrowd": 0,
+            # }]
         })
 
     return dataset_list
@@ -74,8 +75,8 @@ if __name__ == "__main__":
     image_dir = "/Users/sahilmodi/Projects/Image_SuperResolution/building-outline-detection/services/roof_line_detection/cache/test_717_baseline/images"
     output_dir = "results/test_717_baseline_" + time.strftime("%Y%m%d_%H%M%S")
     os.makedirs(output_dir)
-    config_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/Panoptic-DeepLab/configs/Cityscapes-PanopticSegmentation/panoptic_deeplab_R_52_os16_mg124_poly_90k_bs32_crop_512_1024_dsconv.yaml"
-    train_init_checkpoint = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/Panoptic-DeepLab/models/model_panoptic_deeplap_dsconv_cityscapes.pkl"
+    config_file = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/Panoptic-DeepLab/configs/Cityscapes-PanopticSegmentation/panoptic_deeplab_R_52_os16_mg124_poly_90k_bs32_crop_512_1024_dsconv_roofai.yaml"
+    train_init_checkpoint = "/Users/sahilmodi/Projects/Git_Repos/detectron2/projects/Panoptic-DeepLab/models/model_final.pth"
 
     cfg = setup(config_file)
     dataset = DatasetFromList(create_roofai_panoptic_dataset(), copy=False)
@@ -103,7 +104,11 @@ if __name__ == "__main__":
         img = cv2.imread(inputs[0]["file_name"])
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         visualizer = Visualizer(img, MetadataCatalog.get("cityscapes_fine_panoptic_train"))
-        out = visualizer.draw_panoptic_seg(outputs[0]["panoptic_seg"][0], None)
-        x = out.get_image()
-        cv2.imwrite(os.path.join(output_dir, os.path.basename(inputs[0]["file_name"])), cv2.cvtColor(x, cv2.COLOR_BGR2RGB))
+        out = visualizer.draw_panoptic_seg(outputs[0]["panoptic_seg"][0], None, alpha=0.2)
+        pan_seg_mask = outputs[0]["panoptic_seg"][0].numpy()
+        pan_seg_mask_new = np.zeros(pan_seg_mask.shape, dtype=np.uint8)
+        pan_seg_mask_new[np.where(pan_seg_mask == 0)] = 255
+        cv2.imwrite(os.path.join(output_dir, os.path.basename(inputs[0]["file_name"])), pan_seg_mask_new)
+        # x = out.get_image()
+        # cv2.imwrite(os.path.join(output_dir, os.path.basename(inputs[0]["file_name"])), cv2.cvtColor(x, cv2.COLOR_BGR2RGB))
 

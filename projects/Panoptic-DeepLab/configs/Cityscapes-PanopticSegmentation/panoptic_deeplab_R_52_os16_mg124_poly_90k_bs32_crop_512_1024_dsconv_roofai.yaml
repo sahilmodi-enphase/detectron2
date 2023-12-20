@@ -18,9 +18,9 @@ MODEL:
   SEM_SEG_HEAD:
     USE_DEPTHWISE_SEPARABLE_CONV: True
     NUM_CLASSES: 2
-DATASETS:
-  TRAIN: ("roofai_18k_panoptic_train",)
-  TEST: ("roofai_18k_panoptic_val",)
+#DATASETS:
+#  TRAIN: ("roofai_18k_panoptic_train",)
+#  TEST: ("roofai_18k_panoptic_val",)
 SOLVER:
   MAX_ITER: 90000
   IMS_PER_BATCH: 2
